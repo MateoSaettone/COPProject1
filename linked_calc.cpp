@@ -19,9 +19,9 @@ LinkedCalc<T>::~LinkedCalc() {
     // Implementation of the function to deallocate memory
     Node<T>* current = head;
     while (current != nullptr) {
-        Node<T>* nextNode = current->next;  // Save the next node before deleting the current one
-        delete current;  // Deallocate the current node
-        current = nextNode;  // Move to the next node
+        Node<T>* nextNode = current->next;  // Save the next node before deleting current
+        delete current;  // Deallocate current
+        current = nextNode;  // Go to the next node
     }
     head = nullptr;  // Set head to nullptr after deleting all nodes
 }
@@ -50,113 +50,169 @@ bool LinkedCalc<T>::isDigit(const T& c) {
 // Function to validate the expression
 template <typename T>
 bool LinkedCalc<T>::validateExpression() {
-    // Implementation of the validateExpression function
-    if (head == nullptr) return false;  // Empty expression is invalid
-
+    // Initialize current to head
     Node<T>* current = head;
+
+    // Declaration of the initial flags
     bool lastWasDigit = false;
     bool lastWasOperator = false;
     bool decimalInNumber = false;
-
-    // Check if the first character is valid
-    if (!isDigit(current->data) && current->data != '.') {
-        return false;  // Expression cannot start with an operator
+    
+    // If the list is empty, the expression is invalid
+    if (head == nullptr) {
+        return false; 
     }
 
+    // If the expression starts with something other than a digit or '.' it is invalid
+    if (!isDigit(current->data) && current->data != '.') {
+        return false;
+    }
+
+    // Traverse through the linked list
     while (current != nullptr) {
         T currentData = current->data;
 
-        if (isDigit(currentData)) {
+        // If the current data is a digit update flags and continue
+        if (isDigit(currentData) == true) {
             lastWasDigit = true;
             lastWasOperator = false;
-        } else if (currentData == '.') {
-            if (decimalInNumber) {
-                return false;  // Invalid if multiple decimals in the current number
+            current = current->next;
+            continue;
+        }
+
+        // If it is the first decimal dot update flags and continue
+        if (currentData == '.') {
+            // If there has already been a dot then it is invalid
+            if (decimalInNumber == true) {
+                return false;  
             }
+            // Since it is the first we update flags
             decimalInNumber = true;
             lastWasDigit = false;
             lastWasOperator = false;
-        } else if (currentData == '+' || currentData == '-' || currentData == '*' || currentData == '/') {
-            if (lastWasOperator || !lastWasDigit) {
-                return false;  // Invalid if consecutive operators or operator without preceding number
-            }
-            lastWasOperator = true;
-            lastWasDigit = false;
-            decimalInNumber = false;  // Reset decimal flag as we move to a new number
-        } else {
-            return false;  // Invalid character
+            current = current->next;
+            continue;
         }
 
-        current = current->next;  // Move to the next node
+        // Check that it is the first operator and is not consecutive
+        if (currentData == '+' || currentData == '-' || currentData == '*' || currentData == '/') {
+            // Check if there was an operator before or not a digit
+            if (lastWasOperator || !lastWasDigit) {
+                return false; 
+            }
+            // Since it is the first operator update flags
+            lastWasOperator = true;
+            lastWasDigit = false;
+            decimalInNumber = false;
+            current = current->next;
+            continue;
+        }
+
+        // If none of the cases match, it's an invalid character
+        return false;
     }
 
-    return !lastWasOperator;  // Expression shouldn't end with an operator
+    // If the last character was an operator, the expression is invalid
+    if (lastWasOperator == true) {
+        return false;
+    }
+
+    // If not, then the expression is valid
+    else {
+        return true;
+    }
 }
-
-
 
 // Function to evaluate the expression represented by the linked list
 template <typename T>
 float LinkedCalc<T>::evaluateExpression() {
-    //Implementation of the evaluateExpression function
-    if (!validateExpression()) {
-        std::cerr << "Invalid expression!" << std::endl;
-        return -1;  // Return -1 to indicate an invalid expression
-    }
+    // Vectors to hold numbers and operators
+    std::vector<float> numbers;
+    std::vector<char> operators;
 
     Node<T>* current = head;
-    float result = 0.0f;
-    float currentNumber = 0.0f;
-    char lastOperator = '+';  // Start with addition by default
-    bool processingFraction = false;  // Flag to handle decimal places
-    float decimalFactor = 0.1f;  // Factor to scale digits after the decimal point
 
-    // Traverse the lnked list and evaluate the expression
+    // Parse the expression directly from the linked list
     while (current != nullptr) {
-        if (isDigit(current->data)) {
-            if (processingFraction) {
-                // For the fractional part, multiply the digit by the decimal factor and add it
-                currentNumber += (current->data - '0') * decimalFactor;
-                decimalFactor *= 0.1f;  // Move to the next decimal place (0.1, 0.01, etc.)
-            } else {
-                currentNumber = currentNumber * 10 + (current->data - '0');  // Build the integer part of the number
-            }
-        } else if (current->data == '.') {
-            processingFraction = true;  // Switch to processing the fractional part
-            decimalFactor = 0.1f;  // Reset the decimal factor for the fractional digits
-        } else {
-            // Perform the last operator's operation
-            if (lastOperator == '+') {
-                result += currentNumber;
-            } else if (lastOperator == '-') {
-                result -= currentNumber;
-            } else if (lastOperator == '*') {
-                result *= currentNumber;
-            } else if (lastOperator == '/') {
-                result /= currentNumber;
-            }
+        // Parse number
+        std::string numberStr;
+        bool hasDecimal = false;
 
-            // Reset the number and operator for the next part of the expression
-            currentNumber = 0;
-            processingFraction = false;  // Reset for the next number
-            lastOperator = current->data;  // Update the last operator
+        // Collect digits and decimal point for the current number
+        while (current != nullptr && (isDigit(current->data) || current->data == '.')) {
+            numberStr += current->data;
+            current = current->next;
         }
 
-        current = current->next;  // Move to the next node
+        // Convert the accumulated string to a float and add to numbers vector
+        float num = std::stof(numberStr);
+        numbers.push_back(num);
+
+        // If we've reached the end of the list, break out of the loop
+        if (current == nullptr) {
+            break;
+        }
+
+        // Parse operator and add to operators vector
+        operators.push_back(current->data);
+
+        // Move to the next node to continue parsing
+        current = current->next;
     }
 
-    // Apply the final operation after exiting the loop
-    if (lastOperator == '+') {
-        result += currentNumber;
-    } else if (lastOperator == '-') {
-        result -= currentNumber;
-    } else if (lastOperator == '*') {
-        result *= currentNumber;
-    } else if (lastOperator == '/') {
-        result /= currentNumber;
+    // First pass: Process multiplication and division from left to right
+    size_t operatorIndex = 0;
+    while (operatorIndex < operators.size()) {
+        if (operators[operatorIndex] == '*' || operators[operatorIndex] == '/') {
+            float num1 = numbers[operatorIndex];
+            float num2 = numbers[operatorIndex + 1];
+            float result;
+
+            //Do the operation given the current operator
+            if (operators[operatorIndex] == '*') {
+                result = num1 * num2;
+            } else {
+                result = num1 / num2;
+            }
+
+            // Replace the two numbers and operator with the result
+            numbers[operatorIndex] = result;
+            numbers.erase(numbers.begin() + operatorIndex + 1);
+            operators.erase(operators.begin() + operatorIndex);
+            // We do not increment operatorIndex since the vectors have been modified
+        } else {
+            operatorIndex++;
+        }
     }
 
-    return result;
+    // Second pass: Process addition and subtraction from left to right
+    operatorIndex = 0;
+    while (operatorIndex < operators.size()) {
+        if (operators[operatorIndex] == '+' || operators[operatorIndex] == '-') {
+            float num1 = numbers[operatorIndex];
+            float num2 = numbers[operatorIndex + 1];
+            float result;
+
+            // Perform the addition or substraction
+            if (operators[operatorIndex] == '+') {
+                result = num1 + num2;
+            } else {
+                result = num1 - num2;
+            }
+
+            // Replace the two numbers and operator with the result
+            numbers[operatorIndex] = result;
+            numbers.erase(numbers.begin() + operatorIndex + 1);
+            operators.erase(operators.begin() + operatorIndex);
+            // Do not increment operatorIndex since the vectors have been modified
+        } else {
+            operatorIndex++;
+        }
+    }
+
+    // After processing, there should be one number left, which is the result
+    return numbers[0];
 }
+
 
 
