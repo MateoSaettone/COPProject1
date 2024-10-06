@@ -1,3 +1,10 @@
+/*###########################################
+#                                           #
+#        Mateo Saettone Ascenzo             #
+#               U56111212                   #
+#                                           #
+###########################################*/
+
 #include "linked_calc.hpp"
 #include <cctype>
 #include <iostream>
@@ -9,6 +16,7 @@ LinkedCalc<T>::LinkedCalc() : head(nullptr) {}
 // Destructor to deallocate memory
 template <typename T>
 LinkedCalc<T>::~LinkedCalc() {
+    // Implementation of the function to deallocate memory
     Node<T>* current = head;
     while (current != nullptr) {
         Node<T>* nextNode = current->next;  // Save the next node before deleting the current one
@@ -42,6 +50,7 @@ bool LinkedCalc<T>::isDigit(const T& c) {
 // Function to validate the expression
 template <typename T>
 bool LinkedCalc<T>::validateExpression() {
+    // Implementation of the validateExpression function
     if (head == nullptr) return false;  // Empty expression is invalid
 
     Node<T>* current = head;
@@ -89,6 +98,7 @@ bool LinkedCalc<T>::validateExpression() {
 // Function to evaluate the expression represented by the linked list
 template <typename T>
 float LinkedCalc<T>::evaluateExpression() {
+    //Implementation of the evaluateExpression function
     if (!validateExpression()) {
         std::cerr << "Invalid expression!" << std::endl;
         return -1;  // Return -1 to indicate an invalid expression
@@ -101,7 +111,7 @@ float LinkedCalc<T>::evaluateExpression() {
     bool processingFraction = false;  // Flag to handle decimal places
     float decimalFactor = 0.1f;  // Factor to scale digits after the decimal point
 
-    // Traverse the list and evaluate the expression
+    // Traverse the lnked list and evaluate the expression
     while (current != nullptr) {
         if (isDigit(current->data)) {
             if (processingFraction) {
