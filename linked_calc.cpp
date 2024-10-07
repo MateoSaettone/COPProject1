@@ -8,6 +8,7 @@
 #include "linked_calc.hpp"
 #include <cctype>
 #include <iostream>
+#include <vector>
 
 // Default constructor definition
 template <typename T>
@@ -63,7 +64,7 @@ bool LinkedCalc<T>::validateExpression() {
         return false; 
     }
 
-    // If the expression starts with something other than a digit or '.' it is invalid
+    // If the expression starts with something other than a digit or dot it is invalid
     if (!isDigit(current->data) && current->data != '.') {
         return false;
     }
@@ -144,11 +145,11 @@ float LinkedCalc<T>::evaluateExpression() {
             current = current->next;
         }
 
-        // Convert the accumulated string to a float and add to numbers vector
+        // Convert the string to a float and add to numbers vector
         float num = std::stof(numberStr);
         numbers.push_back(num);
 
-        // If we've reached the end of the list, break out of the loop
+        // If weve reached the end of the list break out of the loop
         if (current == nullptr) {
             break;
         }
@@ -160,7 +161,7 @@ float LinkedCalc<T>::evaluateExpression() {
         current = current->next;
     }
 
-    // First pass: Process multiplication and division from left to right
+    // First pass multiplication and division from left to right
     size_t operatorIndex = 0;
     while (operatorIndex < operators.size()) {
         if (operators[operatorIndex] == '*' || operators[operatorIndex] == '/') {
@@ -168,7 +169,7 @@ float LinkedCalc<T>::evaluateExpression() {
             float num2 = numbers[operatorIndex + 1];
             float result;
 
-            //Do the operation given the current operator
+            // Do the operation given the current operator
             if (operators[operatorIndex] == '*') {
                 result = num1 * num2;
             } else {
@@ -185,7 +186,7 @@ float LinkedCalc<T>::evaluateExpression() {
         }
     }
 
-    // Second pass: Process addition and subtraction from left to right
+    // Second pass addition and subtraction from left to right
     operatorIndex = 0;
     while (operatorIndex < operators.size()) {
         if (operators[operatorIndex] == '+' || operators[operatorIndex] == '-') {
